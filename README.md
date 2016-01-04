@@ -12,5 +12,8 @@ unzip it into the blocks folder, and then rename the new folder to upload_group.
 Once installed, capability "block/uploadgroups:add" needs to be added to the roles/users (e.g. teacher) in order for them to be able to use the block.
 
 RELEASE NOTE
+[2016010400]
+- Code style changes required by Moodle for submission to plugins directory
+
 [2015120100]
 - initial release

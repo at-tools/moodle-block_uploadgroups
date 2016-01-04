@@ -1,4 +1,25 @@
 <?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version  of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ *
+ * @package   block_upload_group
+ * @copyright 2015 onwards University of Minnesota
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v or later
+ */
 
 defined('MOODLE_INTERNAL') || exit();
 
@@ -9,7 +30,7 @@ require_once($CFG->libdir.'/formslib.php');
  */
 class block_upload_group_upload_form extends moodleform {
 
-    function definition () {
+    public function definition () {
 
         $mform = & $this->_form;
         $data = $this->_customdata;
@@ -22,26 +43,23 @@ class block_upload_group_upload_form extends moodleform {
         $mform->addElement('html', get_string('upload_help', 'block_upload_group'));
         $mform->addElement('header', 'upload_group_data', get_string('upload_group_data', 'block_upload_group'));
 
-        // add a file manager
+        // Add a file manager.
         $mform->addElement('filepicker', 'group_data', '');
 
-        // add the encoding option
+        // Add the encoding option.
         $choices = core_text::get_encodings();
         $mform->addElement('select', 'encoding', get_string('encoding', 'block_upload_group'), $choices);
         $mform->setDefault('encoding', 'UTF-8');
 
-        // add the delimiter option
+        // Add the delimiter option.
         $choices = csv_import_reader::get_delimiter_list();
         $mform->addElement('select', 'delimiter', get_string('delimiter', 'block_upload_group'), $choices);
 
         if (array_key_exists('cfg', $choices)) {
-
             $mform->setDefault('delimiter_name', 'cfg');
         } else if (get_string('listsep', 'langconfig') == ';') {
-
             $mform->setDefault('delimiter_name', 'semicolon');
         } else {
-
             $mform->setDefault('delimiter_name', 'comma');
         }
 
@@ -58,7 +76,7 @@ class block_upload_group_upload_form extends moodleform {
  */
 class block_upload_group_confirm_form extends moodleform {
 
-    function definition () {
+    public function definition () {
 
         global $DB;
 
@@ -72,26 +90,23 @@ class block_upload_group_confirm_form extends moodleform {
         $mform->addElement('hidden', 'iid', $data['iid']);
         $mform->setType('iid', PARAM_INT);
 
-        // get the available bulk enrolment roles
+        // Get the available bulk enrolment roles.
         $roleids = get_config('block_upload_group', 'allowed_uploadgroup_roles');
         $roles = $DB->get_records_select('role', "id in ($roleids)");
         $rolemenu = role_fix_names($roles, null, ROLENAME_ALIAS, true);
 
         // Set student role as default.
-        $default_role_id = 0;
+        $defaultroleid = 0;
         foreach ($roles as $role) {
-
             if ($role->shortname == 'student') {
-
-                $default_role_id = $role->id;
-
+                $defaultroleid = $role->id;
             }
         }
 
-        // add the role option
+        // Add the role option.
         $mform->addElement('select', 'role', get_string('role_desc', 'block_upload_group'), $rolemenu);
         $mform->setType('role', PARAM_INT);
-        $mform->setDefault('role', $default_role_id);
+        $mform->setDefault('role', $defaultroleid);
 
         $this->add_action_buttons(true, get_string('process_group_data', 'block_upload_group'));
     }

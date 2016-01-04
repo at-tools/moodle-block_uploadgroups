@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -17,10 +16,9 @@
 
 /**
  *
- * @package   block
- * @subpackage upload_group
+ * @package   block_upload_group
+ * @copyright 2015 onwards University of Minnesota
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v or later
- * @copyright University of Minnesota 2012
  */
 
 require_once($CFG->dirroot.'/enrol/locallib.php');
@@ -42,12 +40,12 @@ class block_upload_group_lib {
             $columns[$col] = true;
         }
 
-        // column "GROUP" is required
+        // Column "GROUP" is required.
         if (!isset($columns['GROUP'])) {
             throw new Exception('Column GROUP not found');
         }
 
-        // column "USERNAME" is required
+        // Column "USERNAME" is required.
         if (!isset($columns['USERNAME'])) {
             throw new Exception('Column USERNAME not found');
         }
@@ -60,55 +58,55 @@ class block_upload_group_lib {
      * enrol and add user to groups in course
      * @param object $course
      * @param csv_import_reader $reader
-     * @param int $role_id
+     * @param int $roleid
      */
-     public function process_uploaded_groups($course, $reader, $role_id) {
-         global $DB, $PAGE;
+    public function process_uploaded_groups($course, $reader, $roleid) {
+        global $DB, $PAGE;
 
-         $user_col  = null;    // index of username column
-         $group_col = null;    // index of group column
+        $usercol  = null;    // Index of username column.
+        $groupcol = null;    // Index of group column.
 
-         // find the index of the needed columns
-         $i = 0;
-         foreach ($reader->get_columns() as $col) {
-             $col = strtoupper(trim($col));
+        // Find the index of the needed columns.
+        $i = 0;
+        foreach ($reader->get_columns() as $col) {
+            $col = strtoupper(trim($col));
 
-             switch ($col) {
+            switch ($col) {
                 case 'USERNAME':
-                    $user_col = $i;
-                        break;
+                    $usercol = $i;
+                    break;
 
                 case 'GROUP':
-                        $group_col = $i;
-                        break;
+                    $groupcol = $i;
+                    break;
             }
 
             $i++;
         }
 
-        // get the manual enrolment plugin
-        $enrol_instances = enrol_get_instances($course->id, true);
+        // Get the manual enrolment plugin.
+        $enrolinstances = enrol_get_instances($course->id, true);
 
-        $manual_instance = null;
-        foreach ($enrol_instances as $instance) {
+        $manualinstance = null;
+        foreach ($enrolinstances as $instance) {
             if ($instance->enrol == 'manual') {
-                $manual_instance = $instance;
+                $manualinstance = $instance;
                 break;
             }
         }
-        $manual_enroler = enrol_get_plugin('manual');
+        $manualenroler = enrol_get_plugin('manual');
 
-        // get the list of enrolled users for the course
+        // Get the list of enrolled users for the course.
         $manager = new course_enrolment_manager($PAGE, $course);
         $users  = $manager->get_users('firstname');
         $groups = $manager->get_all_groups();
 
-        $group_ids = array();
+        $groupids = array();
         foreach ($groups as $group) {
-            $group_ids[$group->name] = $group->id;
+            $groupids[$group->name] = $group->id;
         }
 
-        // prep the returned array
+        // Prep the returned array.
         $output = array('group_created'     => array(),
                         'user_enrolled'     => array(),
                         'member_added'      => array(),
@@ -119,14 +117,14 @@ class block_upload_group_lib {
                                'member_failed'     => array(),
                                'user_not_added'     => array()));
 
-        // loop through the records
+        // Loop through the records.
         $reader->init();
 
         while ($line = $reader->next()) {
-            $username  = trim($line[$user_col]);
-            $groupname = trim($line[$group_col]);
+            $username  = trim($line[$usercol]);
+            $groupname = trim($line[$groupcol]);
 
-            // check if the user exists
+            // Check if the user exists.
             $user = $DB->get_record('user', array('username' => $username));
 
             if ($user === false) {
@@ -134,75 +132,64 @@ class block_upload_group_lib {
                 continue;
             }
 
-            // enroll the user as needed
+            // Enroll the user as needed.
             if (!isset($users[$user->id])) {
                 try {
-                    $manual_enroler->enrol_user($manual_instance, $user->id, $role_id);
+                    $manualenroler->enrol_user($manualinstance, $user->id, $roleid);
                     $output['user_enrolled'][] = $username;
-                }
-                catch(Exception $e) {
+                } catch(Exception $e) {
                     $output['error']['enroll_failed'][] = $username;
                 }
             }
 
-            // create the group as needed
-            if (!isset($group_ids[$groupname])) {
+            // Create the group as needed.
+            if (!isset($groupids[$groupname])) {
 
                 if ($groupname != '') {
-
                     $data = new stdClass();
                     $data->courseid = $course->id;
                     $data->name     = $groupname;
 
-                    $new_group_id = groups_create_group($data);
-                }
-                else {
-
-                    $new_group_id = false;
+                    $newgroupid = groups_create_group($data);
+                } else {
+                    $newgroupid = false;
                 }
 
-                if ($new_group_id === false) {
+                if ($newgroupid === false) {
 
                     if ($groupname != '') {
-
                         $output['error']['group_failed'][] = $groupname;
                     }
-                }
-                else {
-                    $group_ids[$groupname]     = $new_group_id;
+                } else {
+                    $groupids[$groupname]     = $newgroupid;
                     $output['group_created'][] = $groupname;
                 }
             }
 
-            // add the user to the group
+            // Add the user to the group.
             if ($groupname != '') {
 
-                if (groups_add_member($group_ids[$groupname], $user->id)) {
+                if (groups_add_member($groupids[$groupname], $user->id)) {
                     if (!isset($output['member_added'][$groupname])) {
                         $output['member_added'][$groupname] = array();
                     }
 
                     $output['member_added'][$groupname][] = $username;
-                }
-                else {
+                } else {
                     if (!isset($output['error']['member_failed'][$groupname])) {
                         $output['error']['member_failed'][$groupname] = array();
                     }
 
                     $output['error']['member_failed'][$groupname][] = $username;
                 }
-            }
-            else {
-
-                // No group name was provided for this user
+            } else {
+                // No group name was provided for this user.
                 $output['error']['user_not_added'][] = $username;
             }
         }
 
         return $output;
     }
-
-
 
     /**
      * Format the result from process_uploaded_group into HTML
@@ -211,20 +198,22 @@ class block_upload_group_lib {
      * @return string
      */
     public function format_result($result) {
-        $str = '<h>'. count($result['group_created']) . ' ' . get_string('result_group_created', 'block_upload_group') . ':</h>';
+        $str = '<h>'. count($result['group_created']) . ' ' .
+            get_string('result_group_created', 'block_upload_group') . ':</h>';
         $str .= '<p>' . implode(', ', $result['group_created']) . '</p><br/>';
 
         $str .= '<h>' . count($result['user_enrolled']) . ' Users enrolled:</h>';
         $str .= '<p>' . implode(', ', $result['user_enrolled']) . '</p><br/>';
 
-        $group_str = '';
-        $group_count = 0;
+        $groupstr = '';
+        $groupcount = 0;
         foreach ($result['member_added'] as $group => $members) {
-            $group_count += count($members);
-            $group_str .= '<br/><h>' . $group . ': </h>';
-            $group_str .= '<p>' . implode(', ', $members) . '</p>';
+            $groupcount += count($members);
+            $groupstr .= '<br/><h>' . $group . ': </h>';
+            $groupstr .= '<p>' . implode(', ', $members) . '</p>';
         }
-        $str .= '<h>' . $group_count . ' ' . get_string('result_member_added', 'block_upload_group') . ':</h>'.$group_str;
+        $str .= '<h>' . $groupcount . ' ' . get_string('result_member_added', 'block_upload_group') .
+            ':</h>'.$groupstr;
 
         $error_count = count($result['error']['user_not_found']) +
                        count($result['error']['group_failed']) +
@@ -259,7 +248,8 @@ class block_upload_group_lib {
         }
 
         if (count($result['error']['user_not_added']) > 0) {
-            $str .= '<br/><h>'. count($result['error']['user_not_added']) . ' ' . get_string('result_user_not_added', 'block_upload_group') . ': </h>';
+            $str .= '<br/><h>'. count($result['error']['user_not_added']) . ' ' .
+                get_string('result_user_not_added', 'block_upload_group') . ': </h>';
             $str .= '<p>' . implode(', ', $result['error']['user_not_added']) . '</p>';
         }
 
