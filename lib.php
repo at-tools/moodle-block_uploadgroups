@@ -105,7 +105,13 @@ class block_upload_group_lib {
 
         // Get the list of enrolled users for the course.
         $manager = new course_enrolment_manager($PAGE, $course);
-        $users  = $manager->get_users('firstname');
+        $totalusers = $manager->get_total_users();
+
+        /*
+         * Since the number of fields being retrieved are limited (email, id, lastaccess, and lastseen),
+         * I feel comfortable retrieving the entire enrolled userbase for this course.
+         */
+        $users  = $manager->get_users('firstname', 'ASC', 0, $totalusers);
         $groups = $manager->get_all_groups();
 
         $groupids = array();
