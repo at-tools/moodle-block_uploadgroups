@@ -18,9 +18,16 @@
  *
  * @package   block_upload_group
  * @copyright 2015 onwards University of Minnesota
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v or later
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+/**
+ * Upload group block
+ *
+ * @package   block_upload_group
+ * @copyright 2015 onwards University of Minnesota
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class block_upload_group extends block_base {
 
     /**
@@ -72,6 +79,9 @@ class block_upload_group extends block_base {
         return $this->content;
     }
 
+    /**
+     * @see block_base::has_config()
+     */
     public function has_config() {
         return true;
     }

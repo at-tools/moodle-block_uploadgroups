@@ -18,11 +18,12 @@
  *
  * @package   block_upload_group
  * @copyright 2015 onwards University of Minnesota
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v or later
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 if (!defined('MOODLE_INTERNAL')) {
-    die('Direct access to this script is forbidden.');    // It must be included from a Moodle page.
+    // It must be included from a Moodle page.
+    die('Direct access to this script is forbidden.');
 }
 
 $ADMIN->add('accounts', new admin_externalpage(

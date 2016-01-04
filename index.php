@@ -18,7 +18,7 @@
  *
  * @package   block_upload_group
  * @copyright 2015 onwards University of Minnesota
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v or later
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require(realpath(dirname(dirname(dirname($_SERVER["SCRIPT_FILENAME"])))).'/config.php');

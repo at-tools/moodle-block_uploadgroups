@@ -18,7 +18,7 @@
  *
  * @package   block_upload_group
  * @copyright 2015 onwards University of Minnesota
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v or later
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || exit();
@@ -26,11 +26,18 @@ defined('MOODLE_INTERNAL') || exit();
 require_once($CFG->libdir.'/formslib.php');
 
 /**
- * upload a CSV file for importing
+ * Upload a CSV file for importing
+ *
+ * @package   block_upload_group
+ * @copyright 2015 onwards University of Minnesota
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class block_upload_group_upload_form extends moodleform {
 
-    public function definition () {
+    /**
+     * The form's definition.
+     */
+    public function definition() {
 
         $mform = & $this->_form;
         $data = $this->_customdata;
@@ -72,10 +79,17 @@ class block_upload_group_upload_form extends moodleform {
 }
 
 /**
- * display list of roles to choose from
+ * Display list of roles to choose from
+ *
+ * @package   block_upload_group
+ * @copyright 2015 onwards University of Minnesota
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class block_upload_group_confirm_form extends moodleform {
 
+    /**
+     * The form's definition.
+     */
     public function definition () {
 
         global $DB;
